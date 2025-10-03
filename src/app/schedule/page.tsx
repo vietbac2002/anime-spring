@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
+import type { Schedule } from '@/lib/types';
 
 export const metadata: Metadata = {
   title: 'Airing Schedule | AnimeSpring',
@@ -40,8 +41,8 @@ export default async function SchedulePage() {
               <TabsContent key={day} value={day}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {(scheduleData[day] && scheduleData[day].length > 0) ? (
-                    scheduleData[day].map(anime => (
-                      <Link key={anime.mal_id} href={`/anime/${anime.mal_id}`}>
+                    scheduleData[day].map((anime: Schedule, index: number) => (
+                      <Link key={`${anime.mal_id}-${index}`} href={`/anime/${anime.mal_id}`}>
                         <Card className="hover:bg-muted transition-colors">
                           <CardContent className="flex items-center gap-4 p-3">
                             <Image
