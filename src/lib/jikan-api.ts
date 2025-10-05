@@ -15,7 +15,7 @@ async function fetchJikan<T>(endpoint: string, params?: Record<string, any>): Pr
   // Add a delay to avoid hitting rate limits
   await new Promise(resolve => setTimeout(resolve, 500));
 
-  const response = await fetch(url.toString());
+  const response = await fetch(url.toString(), { next: { revalidate: 3600 } });
   if (!response.ok) {
     const errorBody = await response.json();
     console.error(`Jikan API Error: ${response.status} ${response.statusText}`, errorBody);
@@ -40,33 +40,8 @@ export async function getAnimeByGenre(genreId: number, options: { page?: number;
   return fetchJikan<Anime[]>(`anime`, { genres: genreId, ...options });
 }
 
-export async function getSchedule(): Promise<JikanResponse<ScheduleData>> {
-  // This is a workaround as Jikan V4 returns an array for schedules, not an object keyed by day.
-  // We will process this into the desired structure.
-  const response = await fetchJikan<any[]>('schedules');
-  
-  const schedulesByDay: ScheduleData = {
-    monday: [],
-    tuesday: [],
-    wednesday: [],
-    thursday: [],
-    friday: [],
-    saturday: [],
-    sunday: [],
-    other: [],
-    unknown: [],
-  };
-
-  response.data.forEach((item) => {
-    const day = item.broadcast.day?.toLowerCase().replace('s', '') || 'unknown';
-    if (day in schedulesByDay) {
-        (schedulesByDay as any)[day].push(item);
-    } else {
-        schedulesByDay.unknown.push(item);
-    }
-  });
-
-  return { data: schedulesByDay };
+export async function getSchedule(day: string): Promise<JikanResponse<Anime[]>> {
+  return fetchJikan<Anime[]>(`schedules`, { filter: day });
 }
 
 export async function getAnimeDetails(id: number): Promise<JikanResponse<Anime>> {

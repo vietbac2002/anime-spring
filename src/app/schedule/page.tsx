@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
-import type { Schedule } from '@/lib/types';
+import type { Anime } from '@/lib/types';
 
 export const metadata: Metadata = {
   title: 'Airing Schedule | AnimeSpring',
@@ -16,12 +16,26 @@ const daysOfWeek = [
   'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'
 ];
 
+async function getAllSchedules() {
+  const scheduleData: Record<string, Anime[]> = {};
+  for (const day of daysOfWeek) {
+    try {
+      const { data } = await getSchedule(day);
+      scheduleData[day] = data;
+    } catch (error) {
+      console.error(`Failed to fetch schedule for ${day}`, error);
+      scheduleData[day] = [];
+    }
+  }
+  return scheduleData;
+}
+
 export default async function SchedulePage() {
   try {
-    const { data: scheduleData } = await getSchedule();
-
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     const defaultTab = daysOfWeek.includes(today) ? today : 'monday';
+    
+    const scheduleData = await getAllSchedules();
 
     return (
       <Container>
@@ -41,7 +55,7 @@ export default async function SchedulePage() {
               <TabsContent key={day} value={day}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {(scheduleData[day] && scheduleData[day].length > 0) ? (
-                    scheduleData[day].map((anime: Schedule, index: number) => (
+                    scheduleData[day].map((anime: Anime, index: number) => (
                       <Link key={`${anime.mal_id}-${index}`} href={`/anime/${anime.mal_id}`}>
                         <Card className="hover:bg-muted transition-colors">
                           <CardContent className="flex items-center gap-4 p-3">
@@ -54,9 +68,11 @@ export default async function SchedulePage() {
                             />
                             <div className="flex-1">
                               <h3 className="font-semibold line-clamp-2">{anime.title}</h3>
-                              <p className="text-sm text-muted-foreground">
-                                {anime.broadcast.time} ({anime.broadcast.timezone})
-                              </p>
+                              {anime.broadcast ? (
+                                <p className="text-sm text-muted-foreground">
+                                  {anime.broadcast.time} ({anime.broadcast.timezone})
+                                </p>
+                              ) : null}
                             </div>
                           </CardContent>
                         </Card>
@@ -75,6 +91,7 @@ export default async function SchedulePage() {
       </Container>
     );
   } catch (error) {
+    console.error(error);
     return (
       <Container>
         <div className="text-center text-destructive">

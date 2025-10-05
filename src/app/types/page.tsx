@@ -6,15 +6,16 @@ import AnimeCard from '@/components/anime-card';
 import { AnimeGridSkeleton } from '@/components/anime-grid-skeleton';
 import { Container } from '@/components/container';
 import { Filters } from './components/filters';
+import { PaginationControls } from '@/components/pagination-controls';
 
 export const metadata: Metadata = {
   title: 'Anime by Type | AnimeSpring',
   description: 'Browse anime by type: TV, Movie, OVA, and more.',
 };
 
-async function FilteredAnimeList({ type, q }: { type?: string; q?: string }) {
+async function FilteredAnimeList({ type, q, page }: { type?: string; q?: string, page?: number }) {
   try {
-    const animeData = await getAnimeList({ type, q, limit: 20 });
+    const animeData = await getAnimeList({ type, q, limit: 20, page });
     if (animeData.data.length === 0) {
       return <p className="text-center col-span-full">No anime found for the selected filters.</p>;
     }
@@ -37,12 +38,13 @@ async function FilteredAnimeList({ type, q }: { type?: string; q?: string }) {
 export default function TypesPage({
   searchParams,
 }: {
-  searchParams: { type?: string; q?: string };
+  searchParams: { type?: string; q?: string; page?: string };
 }) {
   const { type, q } = searchParams;
+  const page = searchParams.page ? parseInt(searchParams.page, 10) : 1;
   
   // A key is used to force re-mounting of Suspense boundary on search param change
-  const suspenseKey = `${type}-${q}`;
+  const suspenseKey = `${type}-${q}-${page}`;
 
   return (
     <Container>
@@ -54,9 +56,10 @@ export default function TypesPage({
         <Filters />
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           <Suspense key={suspenseKey} fallback={<AnimeGridSkeleton count={20} />}>
-            <FilteredAnimeList type={type} q={q} />
+            <FilteredAnimeList type={type} q={q} page={page} />
           </Suspense>
         </div>
+        <PaginationControls />
       </div>
     </Container>
   );

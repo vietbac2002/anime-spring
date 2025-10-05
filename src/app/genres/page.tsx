@@ -26,7 +26,7 @@ export default async function GenresPage() {
             {genres.map((genre) => (
               <Link key={genre.mal_id} href={`/genres/${genre.mal_id}?name=${encodeURIComponent(genre.name)}`}>
                 <Card className="p-4 text-center font-semibold transition-transform hover:scale-105 hover:bg-primary/10 hover:text-primary flex flex-col items-center justify-center gap-2 h-full">
-                  <Tag className="w-6 h-6" />
+                  {/* <Tag className="w-6 h-6" /> */}
                   <span>{genre.name}</span>
                   <span className="text-xs font-normal text-muted-foreground">({genre.count} anime)</span>
                 </Card>
