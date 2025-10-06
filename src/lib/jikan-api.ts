@@ -29,7 +29,7 @@ export async function getCurrentSeason(options: { page?: number; limit?: number 
 }
 
 export async function getAnimeList(options: { type?: string; q?: string; page?: number; limit?: number }): Promise<JikanResponse<Anime[]>> {
-  return fetchJikan<Anime[]>('anime', options);
+  return fetchJikan<Anime[]>('anime?sfw=false', options);
 }
 
 export async function getGenres(): Promise<JikanResponse<Genre[]>> {
